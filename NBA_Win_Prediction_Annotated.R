@@ -1,6 +1,6 @@
 ############################################################
 # NBA Game Win Prediction Using Multivariable Regression
-# Date: 2025-12-05
+# Date: 2025-11-06
 # Description: Predicts NBA game outcomes and point differentials
 ############################################################
 
@@ -93,24 +93,12 @@ win_model <- glm(
 #Displays model coefficients, p-values, and overall fit
 summary(win_model)
 
-#Linear Regression: Predicts the expected point differential (home - away)
-differential_model <- glm(
-  PTS_diff ~ FG_diff + FT_diff + FG3_diff + AST_diff + REB_diff,
-  data = games_clean)
-
-#Shows model fit statistics and predictor significance
-summary(differential_model)
-
-#Prediction Section
-
 #Generate predictions using both regression models
 games_clean <- games_clean %>%
-  mutate(
-    pred_homewin_prob = predict(win_model, newdata = ., type = "response"),   # Predicted probability of a home win
-    pred_winner = if_else(pred_homewin_prob >= 0.5, HOME_ABBREVIATION, VISITOR_ABBREVIATION),  # Predicted winning team
-    pred_margin = as.numeric(predict(differential_model, newdata = .)),       # Predicted point differential
-    pred_side = if_else(pred_winner == HOME_ABBREVIATION, "HOME", "AWAY")     # Predicted side (home/away)
-  )
+  mutate(pred_homewin_prob = predict(win_model, newdata = ., type = "response"),  
+    pred_winner = if_else(pred_homewin_prob >= 0.5, HOME_ABBREVIATION, VISITOR_ABBREVIATION),  
+    pred_margin = as.numeric(predict(differential_model, newdata = .)),       
+    pred_side = if_else(pred_winner == HOME_ABBREVIATION, "HOME", "AWAY")     )
 
 #Preview predictions for quick inspection
 head(games_clean %>%
