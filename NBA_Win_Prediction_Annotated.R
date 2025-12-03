@@ -106,10 +106,10 @@ summary(differential_model)
 #Generate predictions using both regression models
 games_clean <- games_clean %>%
   mutate(
-    pred_homewin_prob = predict(win_model, newdata = ., type = "response"),   # 🔵 Predicted probability of a home win
-    pred_winner = if_else(pred_homewin_prob >= 0.5, HOME_ABBREVIATION, VISITOR_ABBREVIATION),  # 🔵 Predicted winning team
-    pred_margin = as.numeric(predict(differential_model, newdata = .)),       # 🔵 Predicted point differential
-    pred_side = if_else(pred_winner == HOME_ABBREVIATION, "HOME", "AWAY")     # 🔵 Predicted side (home/away)
+    pred_homewin_prob = predict(win_model, newdata = ., type = "response"),   # Predicted probability of a home win
+    pred_winner = if_else(pred_homewin_prob >= 0.5, HOME_ABBREVIATION, VISITOR_ABBREVIATION),  # Predicted winning team
+    pred_margin = as.numeric(predict(differential_model, newdata = .)),       # Predicted point differential
+    pred_side = if_else(pred_winner == HOME_ABBREVIATION, "HOME", "AWAY")     # Predicted side (home/away)
   )
 
 #Preview predictions for quick inspection
