@@ -18,7 +18,9 @@ source("00_requirements.R")
 
 **Abstract**
 
-This analysis investigates which game statistics serve as the most significant predictors of winning an NBA game. Using team-level game data from the 2022-2023 NBA season, we apply multivariable logistic regression to model the binary outcome of game wins (home team wins = 1, away team wins = 0) and linear regression to predict point differentials. Our models incorporate differential statistics between home and away teams across five key performance metrics: field goal percentage (FG_diff), free throw percentage (FT_diff), three-point percentage (FG3_diff), assists (AST_diff), and rebounds (REB_diff). Preliminary analysis suggests that these differential statistics provide meaningful predictive power for game outcomes. The logistic regression model enables prediction of win probabilities, while the linear regression model estimates expected point margins. This analysis benefits sports analysts, team management, and researchers interested in understanding the statistical factors that contribute to NBA game success. The models demonstrate that team performance differentials, particularly in shooting efficiency and ball movement, are critical indicators of game outcomes.
+This analysis investigates the most significant statistical predictors of NBA game outcomes using team-level data from the 2022-2023 season. The core objective is to determine how differential performance metrics between home and away teams influence game results. Our models utilize five key differential variables as predictors in a dual-modeling framework. These include: field goal percentage (FG_diff), free throw percentage (FT_diff), three-point percentage (FG3_diff), assists (AST_diff), and rebounds (REB_diff). 
+
+A multivariable logistic regression model is used to predict the binary outcome of a home team win, yielding the probability of victory. Concurrently, a linear regression model is used to predict the point differential (PTS_diff), providing an estimated margin of victory.  Preliminary findings indicate that these performance differentials offer strong predictive power. Specifically, differences in shooting efficiency (Field Goal and Three-Point Percentage) and ball movement (Assists) emerge as critical statistical variables influencing game success.
 
 # Introduction
 
@@ -38,6 +40,7 @@ The goal of this project is to train predictive models using game statistics. Sp
 3. Identify which statistical differentials (field goal percentage, free throw percentage, three-point percentage, assists, and rebounds) are most significant in predicting game outcomes
 
 By analyzing differential statistics rather than absolute values, we can directly compare team performance within each game and identify which performance gaps are most predictive of victory.
+
 
 # Data
 
