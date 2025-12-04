@@ -6,7 +6,6 @@
 
 #Setup
 knitr::opts_chunk$set(echo = TRUE)
-
 #Loads required packages 
 source("00_requirements.R")
 
@@ -63,7 +62,7 @@ print(summary_stats)
 FG_scat <- ggplot(games_clean, aes(x = FG_diff, y = PTS_diff)) +
   geom_point(alpha = 0.3) +
   geom_smooth(method = "lm", se = TRUE) +
-  labs(title = "Relationship: FG% Diff vs Point Diff",
+  labs(title = "FG% Diff vs Point Diff",
        x = "FG% Differential",
        y = "Point Differential")
 
@@ -71,7 +70,7 @@ FG_scat <- ggplot(games_clean, aes(x = FG_diff, y = PTS_diff)) +
 FT_scat <- ggplot(games_clean, aes(x = FT_diff, y = PTS_diff)) +
   geom_point(alpha = 0.3) +
   geom_smooth(method = "lm", se = TRUE) +
-  labs(title = "Relationship: FT% Diff vs Point Diff",
+  labs(title = "FT% Diff vs Point Diff",
        x = "FT% Differential",
        y = "Point Differential") +
   theme_minimal() +
@@ -81,7 +80,7 @@ FT_scat <- ggplot(games_clean, aes(x = FT_diff, y = PTS_diff)) +
 FG3_scat <- ggplot(games_clean, aes(x = FG3_diff, y = PTS_diff)) +
   geom_point(alpha = 0.3) +
   geom_smooth(method = "lm", se = TRUE) +
-  labs(title = "Relationship: 3PT % Diff vs Point Diff",
+  labs(title = "3PT % Diff vs Point Diff",
        x = "3PT% Differential",
        y = "Point Differential")
 
@@ -89,7 +88,7 @@ FG3_scat <- ggplot(games_clean, aes(x = FG3_diff, y = PTS_diff)) +
 AST_scat <- ggplot(games_clean, aes(x = AST_diff, y = PTS_diff)) +
   geom_point(alpha = 0.3) +
   geom_smooth(method = "lm", se = TRUE) +
-  labs(title = "Relationship: Assist Diff vs Point Diff",
+  labs(title = "Assist Diff vs Point Diff",
        x = "Assist Differential",
        y = "Point Differential")
 
@@ -97,7 +96,7 @@ AST_scat <- ggplot(games_clean, aes(x = AST_diff, y = PTS_diff)) +
 REB_scat <- ggplot(games_clean, aes(x = REB_diff, y = PTS_diff)) +
   geom_point(alpha = 0.3) +
   geom_smooth(method = "lm", se = TRUE) +
-  labs(title = "Relationship: Rebound Diff vs Point Diff",
+  labs(title = "Rebound Diff vs Point Diff",
        x = "Rebound Differential",
        y = "Point Differential")
 
@@ -106,14 +105,14 @@ REB_scat <- ggplot(games_clean, aes(x = REB_diff, y = PTS_diff)) +
 #Logistic Regression: Predicts the probability that the home team wins
 win_model <- glm(
   HOME_TEAM_WINS ~ FG_diff + FT_diff + FG3_diff + AST_diff + REB_diff,
-  data = games_clean,
+  data = train_data,
   family = binomial)
 
 #Displays model coefficients, p-values, and overall fit
 summary(win_model)
 
 # Generate predictions using the logistic regression model
-games_pred <- games_clean %>%
+games_pred <- test_data %>%
   mutate(
     # Predicted probability the home team wins
     PREDICTED_PROB = predict(

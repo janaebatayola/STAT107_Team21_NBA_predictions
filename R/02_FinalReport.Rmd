@@ -51,7 +51,7 @@ The data used in this analysis was sourced from Kaggle, and comes from two prima
 
 ## Data Cleaning Steps
 
-The data cleaning process was created through several key steps. First, the team information from “teams.csv” was integrated into the games’ data, adding abbreviations, nicknames, and cities for both home and away teams, resulting the variables: “HOME_ABBREVIATION”, “VISITOR_ABBREVIATION”, “HOME_NICKNAME”, “VISTOR_NICKNAME”, “HOME_CITY” and “VISITOR_CITY”. Next, differential variables were calculated to enable the direct comparison of team performance within each game, including “FG_diff”, “FT_diff”, “FG3_diff”, “AST_diff”, “REB_diff”, and “PTS_diff”, each representing the difference between home and away statistics. During data cleaning, the “GAME_STATUS_TEXT” column was removed as it was unnecessary for analysis, and a new variable, “ABBREVIATION_TEAM_WIN”, was created to indicate the winning team by abbreviation. Together, these steps produced a comprehensive dataset containing all original game observations enriched with team details and differential performance metrics, preparing it for further modeling and analysis.
+The data cleaning process was created through several key steps. First, the team information from “teams.csv” was integrated into the games’ data, adding abbreviations, nicknames, and cities for both home and away teams, resulting the variables: “HOME_ABBREVIATION”, “VISITOR_ABBREVIATION”, “HOME_NICKNAME”, “VISTOR_NICKNAME”, “HOME_CITY” and “VISITOR_CITY”. Next, differential variables were calculated to enable the direct comparison of team performance within each game, including “FG_diff”, “FT_diff”, “FG3_diff”, “AST_diff”, “REB_diff”, and “PTS_diff”, each representing the difference between home and away statistics. During data cleaning, the “GAME_STATUS_TEXT” column was removed as it was unnecessary for analysis, and a new variable, “ABBREVIATION_TEAM_WIN”, was created to indicate the winning team by abbreviation. Together, these steps produced a comprehensive data set called `games_clean` containing all original game observations enriched with team details and differential performance metrics, preparing it for further modeling and analysis. Two separate data sets were created as a subset of `games_clean`: `test_data` and `train_data`. `test_data` is comprised of 70% of `games_clean` while `train_data` is comprised of 30% of `games_clean`.
 
 ## Visualization
 
@@ -84,34 +84,20 @@ These visualizations give supple initial evidence that the selected predictors d
 The scatter plots below represent relationships between point differential and the differential of five statistics. Comparing these is a good way to analyze the impact that each of the statistics can have on the outcome of a game. Every statistic, including point differential, is measured by the home teams number minus the away teams number. This way, everything is consistent. All of the plots have an upward facing slope, which fits with our intuitive expectations. Winning a differential of any of these statistics helps with winning and overall point differential. However, some have a much stronger impact on the outcome of the game than others.
 
 ```{r, echo=FALSE}
-FG_scat
+scatter_plots <- list(FG_scat, FT_scat, FG3_scat, AST_scat, REB_scat)
+
+grid.arrange(grobs = scatter_plots, nrow = 3, ncol = 2)
 ```
 
-The FG% differential plot has the steepest slope among all metrics analyzed. When a team has a higher percentage of shots made, they will be more likely to win because they will be scoring more of their shot attempts. The larger the differential, the larger the point differential will be assuming that both teams take the same number of shots. It is important to note that winning the field goal % differential does not guarantee winning the game, as outside factors like turnovers and number of shots taken can affect winning in separate ways.
+-   The FG% differential plot has the steepest slope among all metrics analyzed. When a team has a higher percentage of shots made, they will be more likely to win because they will be scoring more of their shot attempts. The larger the differential, the larger the point differential will be assuming that both teams take the same number of shots. It is important to note that winning the field goal % differential does not guarantee winning the game, as outside factors like turnovers and number of shots taken can affect winning in separate ways.
 
-```{r, echo=FALSE}
-FT_scat
-```
+-   The FT% differential plot is far less steep than the FG% differential plot, likely due to free throws not being a very large percentage of overall scoring. Additionally, the amount of total free throws attempts can be very different with certain teams due to style of play, officiating, and luck.
 
-The FT% differential plot is far less steep than the FG% differential plot, likely due to free throws not being a very large percentage of overall scoring. Additionally, the amount of total free throws attempts can be very different with certain teams due to style of play, officiating, and luck.
+-   The 3PT% differential plot follows a similar pattern to the field goal percentage graph, although it is not as steep. The 3PT% differential serves as a middle ground between FT% and FG%. Three pointers intuitively have a larger effect on the outcome of a game than free throws because of their intrinsic higher value (3 points \> 1 point) and the increasing number of 3 point shots taken in the modern NBA. 3PT% has a similar situation where the attempts can fluctuate, meaning that it is possible to have a negative point differential despite having a higher 3PT%.
 
-```{r, echo=FALSE }
-FG3_scat
-```
+-   The assist differential plot exhibits a distinct shape compared to percentage-based metrics because assists are recorded as discrete counts rather than proportions. Since an assist is credited only when a pass directly leads to a made basket, higher assist totals generally correspond to more efficient offensive execution and, consequently, larger point differentials. Although not every scoring possession results from an assist, assist differential remains a meaningful performance indicator and shows a strong association with game outcomes.
 
-The 3PT% differential plot follows a similar pattern to the field goal percentage graph, although it is not as steep. The 3PT% differential serves as a middle ground between FT% and FG%. Three pointers intuitively have a larger effect on the outcome of a game than free throws because of their intrinsic higher value (3 points \> 1 point) and the increasing number of 3 point shots taken in the modern NBA. 3PT% has a similar situation where the attempts can fluctuate, meaning that it is possible to have a negative point differential despite having a higher 3PT%.
-
-```{r, echo=FALSE }
-AST_scat
-```
-
-The assist differential plot exhibits a distinct shape compared to percentage-based metrics because assists are recorded as discrete counts rather than proportions. Since an assist is credited only when a pass directly leads to a made basket, higher assist totals generally correspond to more efficient offensive execution and, consequently, larger point differentials. Although not every scoring possession results from an assist, assist differential remains a meaningful performance indicator and shows a strong association with game outcomes.
-
-```{r, echo=FALSE }
-REB_scat
-```
-
-Similar to assists, rebounds are recorded as whole numbers, which contributes to the cleaner appearance of the rebound differential plot compared to percentage-based metrics. Rebounds are positively correlated with winning, though the relationship is weaker than that of assists. This is reasonable because rebounds do not directly generate points. Offensive rebounds can lead to second-chance scoring opportunities, but the majority of rebounds in a game are defensive. While defensive rebounds do not add to a team’s score, securing them prevents the opponent from extending possessions, reflects missed opponent shots, and increases the number of possessions for a team, all of which contribute indirectly to a stronger point differential.
+-   Similar to assists, rebounds are recorded as whole numbers, which contributes to the cleaner appearance of the rebound differential plot compared to percentage-based metrics. Rebounds are positively correlated with winning, though the relationship is weaker than that of assists. This is reasonable because rebounds do not directly generate points. Offensive rebounds can lead to second-chance scoring opportunities, but the majority of rebounds in a game are defensive. While defensive rebounds do not add to a team’s score, securing them prevents the opponent from extending possessions, reflects missed opponent shots, and increases the number of possessions for a team, all of which contribute indirectly to a stronger point differential.
 
 ## Analysis
 
@@ -134,7 +120,7 @@ The logistic regression model (win_model) evaluates how differential performance
 
 -   **Rebound Differential (REB_diff)**: The coefficient of 0.0914 means that for every extra rebound differential, the log-odds of a home win increase by approximately 0.091. This variable is also statistically significant (p \< 2e-16), but similar to the assist differential, its effect on predicting winning games is modest compared to shooting percentages. This implies that while rebounding contributes to game success, it is far less influential than shooting efficiency.
 
-After fitting the logistic regression model, we generated predicted win probabilities for each game. For each observation, the model outputs the probability that the home team wins based on the statistical differentials. We then classify each game as a predicted home win or predicted away win using a 0.5 probability cutoff. Our model had an 84.13% of predicting game outcomes correctly
+After fitting the logistic regression model, we generated predicted win probabilities for each game. For each observation, the model outputs the probability that the home team wins based on the statistical differentials. We then classify each game as a predicted home win or predicted away win using a 0.5 probability cutoff. The data used on our model was `test_data`. Our model had an 84.73% of predicting game outcomes correctly using `test_data`.
 
 ```{r, echo=FALSE}
 knitr::kable(

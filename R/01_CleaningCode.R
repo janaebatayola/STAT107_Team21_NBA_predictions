@@ -35,3 +35,10 @@ games_clean <- games %>%
          PTS_diff = PTS_home - PTS_away
   ) %>%
   tidyr::drop_na(HOME_TEAM_WINS, PTS_diff, FG_diff, FT_diff, FG3_diff, AST_diff, REB_diff)
+
+#split the data into training data and testing data to see how good our model is on untrained data
+n <- nrow(games_clean)
+train_ind <- sample(1:n, size = floor(0.7 * n))  # 70% = 18,656 obs
+test_ind  <- setdiff(1:n, train_ind)            # remaining 30%
+train_data <- games_clean[train_ind, ] #create the data frame for train_data
+test_data  <- games_clean[test_ind, ] #create the data frame for test_data
