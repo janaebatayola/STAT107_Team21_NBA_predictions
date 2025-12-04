@@ -12,11 +12,11 @@ knitr::opts_chunk$set(
   message = FALSE,   # hides package load messages
   warning = FALSE    # hides warnings
 )
-
+library(here)
 # Loads all required packages and libraries
 source("00_requirements.R")
 source("01_CleaningCode.R")
-source("NBA_WIn_Prediction_Annotated.R")
+source("NBA_Win_Prediction_Annotated.R")
 ```
 
 # NBA Game Win Prediction Using Multivariable Regression Analysis
@@ -83,31 +83,31 @@ These visualizations give supple initial evidence that the selected predictors d
 
 The scatter plots below represent relationships between point differential and the differential of five statistics. Comparing these is a good way to analyze the impact that each of the statistics can have on the outcome of a game. Every statistic, including point differential, is measured by the home teams number minus the away teams number. This way, everything is consistent. All of the plots have an upward facing slope, which fits with our intuitive expectations. Winning a differential of any of these statistics helps with winning and overall point differential. However, some have a much stronger impact on the outcome of the game than others.
 
-```{r, echo=FALSE, fig.width = 5, fig.height = 5}
+```{r, echo=FALSE}
 FG_scat
 ```
 
 The FG% differential plot has the steepest slope among all metrics analyzed. When a team has a higher percentage of shots made, they will be more likely to win because they will be scoring more of their shot attempts. The larger the differential, the larger the point differential will be assuming that both teams take the same number of shots. It is important to note that winning the field goal % differential does not guarantee winning the game, as outside factors like turnovers and number of shots taken can affect winning in separate ways.
 
-```{r, echo=FALSE, fig.width = 5, fig.height = 5}
+```{r, echo=FALSE}
 FT_scat
 ```
 
 The FT% differential plot is far less steep than the FG% differential plot, likely due to free throws not being a very large percentage of overall scoring. Additionally, the amount of total free throws attempts can be very different with certain teams due to style of play, officiating, and luck.
 
-```{r, echo=FALSE, fig.width = 5, fig.height = 5}
+```{r, echo=FALSE }
 FG3_scat
 ```
 
 The 3PT% differential plot follows a similar pattern to the field goal percentage graph, although it is not as steep. The 3PT% differential serves as a middle ground between FT% and FG%. Three pointers intuitively have a larger effect on the outcome of a game than free throws because of their intrinsic higher value (3 points \> 1 point) and the increasing number of 3 point shots taken in the modern NBA. 3PT% has a similar situation where the attempts can fluctuate, meaning that it is possible to have a negative point differential despite having a higher 3PT%.
 
-```{r, echo=FALSE, fig.width = 5, fig.height = 5}
+```{r, echo=FALSE }
 AST_scat
 ```
 
 The assist differential plot exhibits a distinct shape compared to percentage-based metrics because assists are recorded as discrete counts rather than proportions. Since an assist is credited only when a pass directly leads to a made basket, higher assist totals generally correspond to more efficient offensive execution and, consequently, larger point differentials. Although not every scoring possession results from an assist, assist differential remains a meaningful performance indicator and shows a strong association with game outcomes.
 
-```{r, echo=FALSE, fig.width = 5, fig.height = 5}
+```{r, echo=FALSE }
 REB_scat
 ```
 
