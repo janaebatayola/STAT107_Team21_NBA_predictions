@@ -28,22 +28,47 @@ summary_stats <- games_clean %>%
 #Displays the summary statistics table
 print(summary_stats)
 
+# Save histogram objects (data only)
+
 #Visualization Section 
+
+# Histogram to show suitability of log reg
+  hist(games_clean$FG_diff,  main="Field Goal % Differential")
+  hist(games_clean$FT_diff,  main="Free Throw % Differential")
+  hist(games_clean$FG3_diff, main="3-Point % Differential")
+  hist(games_clean$AST_diff, main="Assists Differential")
+  hist(games_clean$REB_diff, main="Rebounds Differential")
+  hist(games_clean$PTS_diff, main="Points Differential")
+  
+  # Box plots comparing statistics for wins vs losses
+ boxplot_diff <- games_clean %>%
+    mutate(Win_Status = ifelse(HOME_TEAM_WINS == 1, "Home Win", "Away Win")) %>%
+    select(Win_Status, FG_diff, FT_diff, FG3_diff, AST_diff, REB_diff) %>%
+    pivot_longer(cols = -Win_Status, names_to = "Statistic", values_to = "Value") %>%
+    ggplot(aes(x = Win_Status, y = Value, fill = Win_Status)) +
+    geom_boxplot() +
+    facet_wrap(~Statistic, scales = "free_y") +
+    labs(title = "Distribution of Differential Statistics by Game Outcome",
+         x = "Game Outcome",
+         y = "Differential Value") +
+    theme_minimal() +
+    theme(legend.position = "none")
+  # Produces boxplots comparing statistical differentials between home and away wins.
+  # Faceting allows side-by-side comparison of multiple stats.
+  # Helps visualize which stats increase with wins.
 
 #Scatter plots showing linear trends between predictors and point differential
 
 #1. Field Goal % Differential
-ggplot(games_clean, aes(x = FG_diff, y = PTS_diff)) +
+FG_scat <- ggplot(games_clean, aes(x = FG_diff, y = PTS_diff)) +
   geom_point(alpha = 0.3) +
   geom_smooth(method = "lm", se = TRUE) +
   labs(title = "Relationship: FG% Diff vs Point Diff",
        x = "FG% Differential",
-       y = "Point Differential") +
-  theme_minimal() +
-  theme(plot.title = element_text(hjust = 0.5)) 
+       y = "Point Differential")
 
 #2. Free Throw % Differential
-ggplot(games_clean, aes(x = FT_diff, y = PTS_diff)) +
+FT_scat <- ggplot(games_clean, aes(x = FT_diff, y = PTS_diff)) +
   geom_point(alpha = 0.3) +
   geom_smooth(method = "lm", se = TRUE) +
   labs(title = "Relationship: FT% Diff vs Point Diff",
@@ -53,34 +78,28 @@ ggplot(games_clean, aes(x = FT_diff, y = PTS_diff)) +
   theme(plot.title = element_text(hjust = 0.5))
 
 #3. Three-Point % Differential
-ggplot(games_clean, aes(x = FG3_diff, y = PTS_diff)) +
+FG3_scat <- ggplot(games_clean, aes(x = FG3_diff, y = PTS_diff)) +
   geom_point(alpha = 0.3) +
   geom_smooth(method = "lm", se = TRUE) +
   labs(title = "Relationship: 3PT % Diff vs Point Diff",
        x = "3PT% Differential",
-       y = "Point Differential") +
-  theme_minimal() +
-  theme(plot.title = element_text(hjust = 0.5))
+       y = "Point Differential")
 
 #4. Assist Differential
-ggplot(games_clean, aes(x = AST_diff, y = PTS_diff)) +
+AST_scat <- ggplot(games_clean, aes(x = AST_diff, y = PTS_diff)) +
   geom_point(alpha = 0.3) +
   geom_smooth(method = "lm", se = TRUE) +
   labs(title = "Relationship: Assist Diff vs Point Diff",
        x = "Assist Differential",
-       y = "Point Differential") +
-  theme_minimal() +
-  theme(plot.title = element_text(hjust = 0.5))
+       y = "Point Differential")
 
 #5. Rebound Differential
-ggplot(games_clean, aes(x = REB_diff, y = PTS_diff)) +
+REB_scat <- ggplot(games_clean, aes(x = REB_diff, y = PTS_diff)) +
   geom_point(alpha = 0.3) +
   geom_smooth(method = "lm", se = TRUE) +
   labs(title = "Relationship: Rebound Diff vs Point Diff",
        x = "Rebound Differential",
-       y = "Point Differential") +
-  theme_minimal() +
-  theme(plot.title = element_text(hjust = 0.5))
+       y = "Point Differential")
 
 #Prediction Modeling Section
 
@@ -93,14 +112,64 @@ win_model <- glm(
 #Displays model coefficients, p-values, and overall fit
 summary(win_model)
 
-#Generate predictions using both regression models
-games_clean <- games_clean %>%
-  mutate(pred_homewin_prob = predict(win_model, newdata = ., type = "response"),  
-    pred_winner = if_else(pred_homewin_prob >= 0.5, HOME_ABBREVIATION, VISITOR_ABBREVIATION),  
-    pred_margin = as.numeric(predict(differential_model, newdata = .)),       
-    pred_side = if_else(pred_winner == HOME_ABBREVIATION, "HOME", "AWAY")     )
+# Generate predictions using the logistic regression model
+games_pred <- games_clean %>%
+  mutate(
+    # Predicted probability the home team wins
+    PREDICTED_PROB = predict(
+      win_model,
+      newdata = .,
+      type = "response"
+    ),
+    
+    # Predicted winner based on 0.5 threshold
+    PREDICTED_WINNER = if_else(
+      PREDICTED_PROB >= 0.5,
+      HOME_NICKNAME,
+      VISITOR_NICKNAME
+    ),
+    
+    # Actual winner from the real game results
+    ACTUAL_WINNER = if_else(
+      HOME_TEAM_WINS == 1,
+      HOME_NICKNAME,
+      VISITOR_NICKNAME
+    ),
+    
+    # Whether the prediction was correct
+    CORRECT = (PREDICTED_WINNER == ACTUAL_WINNER),
+    
+    # (Optional) Predicted side HOME vs AWAY
+    PREDICTED_SIDE = if_else(
+      PREDICTED_WINNER == HOME_NICKNAME,
+      "HOME",
+      "AWAY"
+    )
+  )
+# win model coefficient table made for analysis
+win_model_summary <- tidy(win_model) %>%
+  mutate(
+    estimate  = round(estimate, 3),
+    std.error = round(std.error, 3),
+    statistic = round(statistic, 2),
+    p.value   = format.pval(p.value, digits = 3, eps = 2e-16)
+  ) %>%
+  rename(
+    Term      = term,
+    Estimate  = estimate,
+    Std_Error = std.error,
+    Z_value   = statistic,
+    P_value   = p.value
+  )
 
-#Preview predictions for quick inspection
-head(games_clean %>%
-       select(GAME_ID, HOME_ABBREVIATION, VISITOR_ABBREVIATION,
-              HOME_TEAM_WINS, pred_homewin_prob, pred_winner, pred_margin, pred_side))
+# Table made for report
+pred_table <- games_pred %>%
+  transmute(
+    Home_Team        = HOME_NICKNAME,
+    Away_Team        = VISITOR_NICKNAME,
+    Actual_Winner    = ACTUAL_WINNER,
+    Predicted_Winner = PREDICTED_WINNER,
+    Predicted_Prob   = round(PREDICTED_PROB, 3),
+    Correct          = CORRECT
+  ) %>%
+  head()

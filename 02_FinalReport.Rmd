@@ -1,283 +1,155 @@
 ---
 title: "NBA Game Win Prediction Using Multivariable Regression Analysis"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 date: "2025-11-06"
 ---
 
 ```{r setup, include=FALSE}
-# Ensures all code chunks show their code when rendered unless they are overridden
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(
+  echo = FALSE,      # hides ALL code
+  message = FALSE,   # hides package load messages
+  warning = FALSE    # hides warnings
+)
 
 # Loads all required packages and libraries
 source("00_requirements.R")
+source("01_CleaningCode.R")
+source("NBA_WIn_Prediction_Annotated.R")
 ```
 
-# Title and Abstract
+# NBA Game Win Prediction Using Multivariable Regression Analysis
 
-## NBA Game Win Prediction Using Multivariable Regression Analysis
+## Abstract
 
-**Abstract**
+This analysis investigates the most significant statistical predictors of NBA game outcomes using team-level data from the 2022-2023 season. The core objective is to determine how differential performance metrics between home and away teams influence game results. Our models utilize five key differential variables as predictors in a dual-modeling framework. These include: field goal percentage (FG_diff), free throw percentage (FT_diff), three-point percentage (FG3_diff), assists (AST_diff), and rebounds (REB_diff).
 
-This analysis investigates the most significant statistical predictors of NBA game outcomes using team-level data from the 2022-2023 season. The core objective is to determine how differential performance metrics between home and away teams influence game results. Our models utilize five key differential variables as predictors in a dual-modeling framework. These include: field goal percentage (FG_diff), free throw percentage (FT_diff), three-point percentage (FG3_diff), assists (AST_diff), and rebounds (REB_diff). 
+A multivariable logistic regression model is used to predict the binary outcome of a home team win, yielding the probability of victory. Preliminary findings indicate that these performance differentials offer strong predictive power. Specifically, differences in shooting efficiency (Field Goal and Three-Point Percentage) emerge as critical statistical variables influencing game success.
 
-A multivariable logistic regression model is used to predict the binary outcome of a home team win, yielding the probability of victory. Concurrently, a linear regression model is used to predict the point differential (PTS_diff), providing an estimated margin of victory.  Preliminary findings indicate that these performance differentials offer strong predictive power. Specifically, differences in shooting efficiency (Field Goal and Three-Point Percentage) and ball movement (Assists) emerge as critical statistical variables influencing game success.
-
-# Introduction
+## Introduction
 
 The purpose of this analysis is to develop predictive models that can identify which game statistics are most influential in determining the outcome of NBA games. The central research question we aim to answer is: **Which game statistics are the most significant predictors of winning an NBA game?**
 
 This analysis may benefit several groups:
 
-- **Sports analysts and statisticians** seeking to understand the quantitative factors that drive game outcomes
-- **Team management and coaches** who can use these insights to identify areas for strategic focus and improvement
-- **Sports betting analysts** interested in data-driven game predictions
-- **Researchers** studying the statistical relationships in professional basketball
+-   **Sports analysts and statisticians** seeking to understand the quantitative factors that drive game outcomes
+-   **Team management and coaches** who can use these insights to identify areas for strategic focus and improvement
+-   **Sports betting analysts** interested in data-driven game predictions
+-   **Researchers** studying the statistical relationships in professional basketball
 
 The goal of this project is to train predictive models using game statistics. Specifically, we aim to:
 
-1. Build a logistic regression model to predict the binary outcome of whether the home team wins or loses
-2. Build a linear regression model to predict the point differential between teams
-3. Identify which statistical differentials (field goal percentage, free throw percentage, three-point percentage, assists, and rebounds) are most significant in predicting game outcomes
+1.  Build a logistic regression model to predict the binary outcome of whether the home team wins or loses
+2.  Identify which statistical differentials (field goal percentage, free throw percentage, three-point percentage, assists, and rebounds) are most significant in predicting game outcomes
 
 By analyzing differential statistics rather than absolute values, we can directly compare team performance within each game and identify which performance gaps are most predictive of victory.
 
+## Data
 
-# Data
-
-The data available for this analysis consists of two primary datasets:
-
-1. **`games.csv`**: Contains game-level statistics for NBA games, including performance metrics for both home and away teams
-2. **`teams.csv`**: Contains team identification information including team IDs, abbreviations, nicknames, and cities
-
-The data was retrieved from NBA game records and contains approximately 26,651 game observations from the 2022-2023 NBA season and related periods.
-
-## Variables
-
-The key variables in the analysis include:
-
-**Game-level identifiers:**
-- `GAME_DATE_EST`: Date of the game
-- `GAME_ID`: Unique identifier for each game
-- `HOME_TEAM_ID`: Identifier for the home team
-- `VISITOR_TEAM_ID`: Identifier for the visiting team
-- `SEASON`: Season year
-
-**Performance metrics (for both home and away teams):**
-- `PTS_home` / `PTS_away`: Points scored
-- `FG_PCT_home` / `FG_PCT_away`: Field goal percentage
-- `FT_PCT_home` / `FT_PCT_away`: Free throw percentage
-- `FG3_PCT_home` / `FG3_PCT_away`: Three-point field goal percentage
-- `AST_home` / `AST_away`: Assists
-- `REB_home` / `REB_away`: Rebounds
-
-**Outcome variable:**
-- `HOME_TEAM_WINS`: Binary indicator (1 if home team wins, 0 if away team wins)
+The data used in this analysis was sourced from Kaggle, and comes from two primary datasets. The first dataset “games.csv”, includes game-level statistics for NBA matchups with performance metrics for both home and away teams. These included field goal percentage (FG_diff), free throw percentage (FT_diff), three-point percentage (FG3_diff), assists (AST_diff), and rebounds (REB_diff) per team from the 2022-2023 season. The second dataset “teams.csv”, provides team identification details such as team IDs, abbreviations, nicknames, and cities.
 
 ## Data Cleaning Steps
 
-The following data cleaning steps were performed:
+The data cleaning process was created through several key steps. First, the team information from “teams.csv” was integrated into the games’ data, adding abbreviations, nicknames, and cities for both home and away teams, resulting the variables: “HOME_ABBREVIATION”, “VISITOR_ABBREVIATION”, “HOME_NICKNAME”, “VISTOR_NICKNAME”, “HOME_CITY” and “VISITOR_CITY”. Next, differential variables were calculated to enable the direct comparison of team performance within each game, including “FG_diff”, “FT_diff”, “FG3_diff”, “AST_diff”, “REB_diff”, and “PTS_diff”, each representing the difference between home and away statistics. During data cleaning, the “GAME_STATUS_TEXT” column was removed as it was unnecessary for analysis, and a new variable, “ABBREVIATION_TEAM_WIN”, was created to indicate the winning team by abbreviation. Together, these steps produced a comprehensive dataset containing all original game observations enriched with team details and differential performance metrics, preparing it for further modeling and analysis.
 
-1. **Team information integration**: The `teams.csv` dataset was joined with the games data to add team abbreviations, nicknames, and cities for both home and away teams, creating variables such as `HOME_ABBREVIATION`, `VISITOR_ABBREVIATION`, `HOME_NICKNAME`, `VISITOR_NICKNAME`, `HOME_CITY`, and `VISITOR_CITY`.
+## Visualization
 
-2. **Differential variable creation**: To enable direct comparison of team performance within each game, differential variables were calculated:
-   - `FG_diff = FG_PCT_home - FG_PCT_away`
-   - `FT_diff = FT_PCT_home - FT_PCT_away`
-   - `FG3_diff = FG3_PCT_home - FG3_PCT_away`
-   - `AST_diff = AST_home - AST_away`
-   - `REB_diff = REB_home - REB_away`
-   - `PTS_diff = PTS_home - PTS_away`
-
-3. **Data cleaning**: The `GAME_STATUS_TEXT` column was removed as it was not needed for analysis. A variable `ABBREVIATION_TEAM_WIN` was created to identify the winning team by abbreviation.
-
-The cleaned dataset (`games_clean`) contains all original game observations with the added team information and differential statistics, ready for modeling and analysis.
-
-# Visualization
-
-Preliminary visualizations provide insights into the distribution of key variables and their relationships with game outcomes. The following visualizations help us understand the data structure and inform our modeling approach.
-
-```{r data-loading}
-# Make sure to load the data first from 01_Cleaning.Rmd
+```{r, echo=FALSE}
+  par(mfrow = c(2, 3))
+  hist(games_clean$FG_diff,  main="Field Goal % Differential")
+  hist(games_clean$FT_diff,  main="Free Throw % Differential")
+  hist(games_clean$FG3_diff, main="3-Point % Differential")
+  hist(games_clean$AST_diff, main="Assists Differential")
+  hist(games_clean$REB_diff, main="Rebounds Differential")
+  hist(games_clean$PTS_diff, main="Points Differential")
 ```
 
-```{r numerical-summaries}
-# Numerical summaries of key differential variables
-summary_stats <- games_clean %>%
-  select(FG_diff, FT_diff, FG3_diff, AST_diff, REB_diff, PTS_diff) %>%
-  summarise_all(list(
-    mean = ~mean(., na.rm = TRUE),
-    median = ~median(., na.rm = TRUE),
-    sd = ~sd(., na.rm = TRUE),
-    min = ~min(., na.rm = TRUE),
-    max = ~max(., na.rm = TRUE)
-  ))
-# Creates summary statistics for differential performance metrics to check averages, spread, and range.
+The histograms above display the distributions of each performance differential variable used in the analysis. All six differentials are centered close to zero, which is expected because they represent the home team’s performance minus the away team’s performance. Each variable shows a roughly symmetric, bell-shaped distribution, indicating that home teams do not consistently outperform away teams in any single metric across all games.
 
-print(summary_stats)
-# Displays the summary table for quick data inspection.
+Field goal (FG%), free throw (FT%), and three-point percentage (3PT%) differentials exhibit relatively tight spreads, reflecting that shooting efficiency differences between teams tend to be modest. In contrast, assists and rebounds display wider variability, suggesting larger game-to-game fluctuations in these counting statistics. Point differential has the broadest spread, which aligns with variation in final game outcomes.
+
+These histograms confirm that the predictors behave like continuous, well-distributed performance metrics without extreme skewness or heavy outliers. This supports the suitability of using these variables in a logistic regression framework to predict game outcomes.
+
+```{r, echo=FALSE}
+boxplot_diff
 ```
 
-```{r histograms}
-# Histograms of differential variables
-par(mfrow = c(2, 3))
-# Sets plotting layout for 6 histograms in a 2x3 grid.
+The boxplots above compare each differential performance metric between games where the home team won and games where the home team lost. Across all six statistics, home team wins are associated with higher differential values, meaning the home team generally outperformed the visiting team in these areas when they won.
 
-hist(games_clean$FG_diff, main = "Field Goal % Differential", xlab = "FG_diff", breaks = 30)
-# Plots home vs away shooting accuracy difference distribution.
+Assist and rebound differentials show large separation between win and loss outcomes, indicating that advantages in ball movement and possession are strongly related to winning. Shooting efficiency metrics (FG%, FT%, and 3PT%) display smaller but still meaningful shifts toward positive values in home wins. These patterns support the idea that both scoring efficiency and overall control of the game contribute to successful outcomes.
 
-hist(games_clean$FT_diff, main = "Free Throw % Differential", xlab = "FT_diff", breaks = 30)
-# Shows variation in free throw differential.
+These visualizations give supple initial evidence that the selected predictors differ between wins and losses. This justifies their usage in the logistic regression model,
 
-hist(games_clean$FG3_diff, main = "3-Point % Differential", xlab = "FG3_diff", breaks = 30)
-# Displays the spread of 3-point shooting differentials.
+The scatter plots below represent relationships between point differential and the differential of five statistics. Comparing these is a good way to analyze the impact that each of the statistics can have on the outcome of a game. Every statistic, including point differential, is measured by the home teams number minus the away teams number. This way, everything is consistent. All of the plots have an upward facing slope, which fits with our intuitive expectations. Winning a differential of any of these statistics helps with winning and overall point differential. However, some have a much stronger impact on the outcome of the game than others.
 
-hist(games_clean$AST_diff, main = "Assists Differential", xlab = "AST_diff", breaks = 30)
-# Visualizes the difference in team assists per game.
-
-hist(games_clean$REB_diff, main = "Rebounds Differential", xlab = "REB_diff", breaks = 30)
-# Shows how rebounds differ between home and away teams.
-
-hist(games_clean$PTS_diff, main = "Points Differential", xlab = "PTS_diff", breaks = 30)
-# Final histogram displaying how scoring margins distribute.
+```{r, echo=FALSE}
+FG_scat
 ```
 
-```{r density-plots}
-# Density plots comparing wins vs losses
-games_clean %>%
-  mutate(Win_Status = ifelse(HOME_TEAM_WINS == 1, "Home Win", "Away Win")) %>%
-  ggplot(aes(x = PTS_diff, fill = Win_Status)) +
-  geom_density(alpha = 0.6) +
-  labs(title = "Distribution of Point Differential by Game Outcome",
-       x = "Point Differential (Home - Away)",
-       y = "Density") +
-  theme_minimal()
-# Creates density plots of point differential for home vs. away wins.
-# A strong separation indicates point differential strongly predicts wins.
+The FG% differential plot has the steepest slope among all metrics analyzed. When a team has a higher percentage of shots made, they will be more likely to win because they will be scoring more of their shot attempts. The larger the differential, the larger the point differential will be assuming that both teams take the same number of shots. It is important to note that winning the field goal % differential does not guarantee winning the game, as outside factors like turnovers and number of shots taken can affect winning in separate ways.
+
+```{r, echo=FALSE}
+FT_scat
 ```
 
-```{r box-plots}
-# Box plots comparing statistics for wins vs losses
-games_clean %>%
-  mutate(Win_Status = ifelse(HOME_TEAM_WINS == 1, "Home Win", "Away Win")) %>%
-  select(Win_Status, FG_diff, FT_diff, FG3_diff, AST_diff, REB_diff) %>%
-  pivot_longer(cols = -Win_Status, names_to = "Statistic", values_to = "Value") %>%
-  ggplot(aes(x = Win_Status, y = Value, fill = Win_Status)) +
-  geom_boxplot() +
-  facet_wrap(~Statistic, scales = "free_y") +
-  labs(title = "Distribution of Differential Statistics by Game Outcome",
-       x = "Game Outcome",
-       y = "Differential Value") +
-  theme_minimal() +
-  theme(legend.position = "none")
-# Produces boxplots comparing statistical differentials between home and away wins.
-# Faceting allows side-by-side comparison of multiple stats.
-# Helps visualize which stats increase with wins.
+The FT% differential plot is far less steep than the FG% differential plot, likely due to free throws not being a very large percentage of overall scoring. Additionally, the amount of total free throws attempts can be very different with certain teams due to style of play, officiating, and luck.
+
+```{r, echo=FALSE }
+FG3_scat
 ```
 
-```{r scatter-plots}
-# Scatter plots showing relationships between predictors and point differential
-games_clean %>%
-  select(FG_diff, FT_diff, FG3_diff, AST_diff, REB_diff, PTS_diff) %>%
-  pivot_longer(cols = -PTS_diff, names_to = "Predictor", values_to = "Value") %>%
-  ggplot(aes(x = Value, y = PTS_diff)) +
-  geom_point(alpha = 0.3) +
-  geom_smooth(method = "lm", se = TRUE) +
-  facet_wrap(~Predictor, scales = "free_x") +
-  labs(title = "Relationship Between Predictors and Point Differential",
-       x = "Predictor Value",
-       y = "Point Differential (Home - Away)") +
-  theme_minimal()
-# Creates scatterplots of each predictor vs. point differential.
-# Adds regression lines to visualize liner trends
-# Used to validate suitability for linear regression.
+The 3PT% differential plot follows a similar pattern to the field goal percentage graph, although it is not as steep. The 3PT% differential serves as a middle ground between FT% and FG%. Three pointers intuitively have a larger effect on the outcome of a game than free throws because of their intrinsic higher value (3 points \> 1 point) and the increasing number of 3 point shots taken in the modern NBA. 3PT% has a similar situation where the attempts can fluctuate, meaning that it is possible to have a negative point differential despite having a higher 3PT%.
+
+```{r, echo=FALSE }
+AST_scat
 ```
 
-## Visualization Interpretation
+The assist differential plot exhibits a distinct shape compared to percentage-based metrics because assists are recorded as discrete counts rather than proportions. Since an assist is credited only when a pass directly leads to a made basket, higher assist totals generally correspond to more efficient offensive execution and, consequently, larger point differentials. Although not every scoring possession results from an assist, assist differential remains a meaningful performance indicator and shows a strong association with game outcomes.
 
-The visualizations suggest several important patterns:
-
-1. **Distribution patterns**: The histograms show that differential variables are approximately normally distributed around zero, which is expected since these represent differences between two teams in the same game.
-
-2. **Point differential and outcomes**: The density plot of point differential by game outcome shows a clear separation, with home wins associated with positive point differentials and away wins with negative differentials, confirming that point differential is a strong indicator of game outcome.
-
-3. **Predictor relationships**: The box plots reveal that home wins tend to have higher values for most differential statistics (FG_diff, FT_diff, FG3_diff, AST_diff, REB_diff) compared to away wins, suggesting these variables may be useful predictors.
-
-4. **Linear relationships**: The scatter plots with regression lines indicate that all predictor variables show positive linear relationships with point differential, supporting the use of linear regression for modeling point differentials.
-
-These visualizations support the hypothesis that differential statistics are meaningful predictors of game outcomes and justify proceeding with multivariable regression models.
-
-# Analysis
-
-This section outlines the preliminary plans for the analysis and presents the initial models developed to predict NBA game outcomes.
-
-## Planned Analysis
-
-We aim to complete the following analyses:
-
-1. **Logistic Regression Model for Win Prediction**: A binomial logistic regression model will be used to predict the probability that the home team wins, using the differential statistics as predictors. This model will help identify which statistical differentials are most significant in determining game outcomes.
-
-2. **Linear Regression Model for Point Differential**: A linear regression model will predict the expected point differential (home team points minus away team points), providing insight into not just who wins, but by how much.
-
-3. **Model Evaluation**: We will evaluate model performance using appropriate metrics and assess the significance of each predictor variable.
-
-4. **Prediction Generation**: Using the trained models, we will generate predictions for game outcomes and point margins.
-
-## Expected Outcomes
-
-We expect to find that:
-
-- **Field goal percentage differential** will be a strong predictor, as shooting efficiency is fundamental to scoring
-- **Rebound differential** may be significant, as rebounding affects both offensive opportunities and defensive stops
-- **Assist differential** could indicate team ball movement and offensive coordination
-- **Free throw and three-point percentage differentials** may provide additional predictive power, though their relative importance may vary
-
-The models will help quantify which of these factors are most critical for game success.
-
-## Model Implementation
-
-```{r win-model}
-# Logistic regression model for predicting home team wins
-win_model <- glm(
-  HOME_TEAM_WINS ~ FG_diff + FT_diff + FG3_diff + AST_diff + REB_diff,
-  data = games_clean,
-  family = binomial)
-# Fits a logistic regression model prediciting home win probability.
-# Uses differential statistics as prefictors for binary outcome (win/loss.)
-
-# Summary of the win prediction model
-# Displays model coefficients, p-values and fit metrics.
-summary(win_model)
+```{r, echo=FALSE }
+REB_scat
 ```
 
-```{r differential-model}
-# Linear regression model for predicting point differential
-differential_model <- glm(
-  PTS_diff ~ FG_diff + FT_diff + FG3_diff + AST_diff + REB_diff,
-  data = games_clean)
-# Fits a linear regression model predicting point differential (margin of victory.)
-# Measures how each stat difference contributes to scoring margin.
+Similar to assists, rebounds are recorded as whole numbers, which contributes to the cleaner appearance of the rebound differential plot compared to percentage-based metrics. Rebounds are positively correlated with winning, though the relationship is weaker than that of assists. This is reasonable because rebounds do not directly generate points. Offensive rebounds can lead to second-chance scoring opportunities, but the majority of rebounds in a game are defensive. While defensive rebounds do not add to a team’s score, securing them prevents the opponent from extending possessions, reflects missed opponent shots, and increases the number of possessions for a team, all of which contribute indirectly to a stronger point differential.
 
-# Summary of the point differential model
-# Displays coefficients, R-squared, and significance levels.
-summary(differential_model)
+## Analysis
+
+```{r, echo=FALSE }
+kable(
+  win_model_summary,
+  caption = "Logistic Regression Coefficients for Predicting Home Team Win Probability"
+)
 ```
 
-```{r predictions}
-# Generate predictions using the models
-games_clean <- games_clean %>%
-  mutate(
-    pred_homewin_prob = predict(win_model, newdata = ., type = "response"),
-# Calculates predicted probability of a home team win (0-1 scale).
+The logistic regression model (win_model) evaluates how differential performance metrics influence the probability of a home team winning. Below is a detailed interpretation of each predictor:
 
-    pred_winner = if_else(pred_homewin_prob >= 0.5, HOME_ABBREVIATION, 
-                          VISITOR_ABBREVIATION),
- # Assigns predicted winner based on a 0.5 probability cutoff.
+-   **Field Goal Percentage Differential (FG_diff)**: A coefficient of 25.352 indicates that for every 1 unit increase in field-goal percentage differential (home FG% - away FG%), the log-odds of the home team winning increase by approximately 25.35. This extremely large coefficient reflects the strong relationship between shooting efficiency and wins. The p-value is \< 2e-16, demonstrating overwhelming statistical significance. This confirms that FG% differential is one of the strongest predictors of game outcome.
 
-    pred_margin = as.numeric(predict(differential_model, newdata = .)),
-# Predicts expected point differential (predicted score margin).
-    pred_side = if_else(pred_winner == HOME_ABBREVIATION, "HOME", "AWAY")
-# Labels which side (home or away) is predicted to win.
-  )
-# Adds all prediction columns to the dataset: win probability, predicted winner, and point margin.
+-   **Free Throw Percentage Differential (FT_diff)**: With a coefficient of 4.176, a 1-unit increase in free throw percentage differential is associated with a 4.18 increase in the log-odds of the home team winning. While a weaker predictor compared to FG%, free throw differential contributes to predicting game outcomes, as shown by the p-value (\< 2e-16).
+
+-   **Three Point Percentage Differential (FG3_diff**): With a coefficient of 4.591, a 1-unit increase in free throw percentage differential is associated with a 4.591 increase in the log-odds of the home team winning. With the p-value (\<2e-16), 3PT% is a statistically significant predictor and reflects the importance of the 3 point shot for winning games in the modern NBA.
+
+-   **Assist Differential (AST_diff)**: The coefficient of 0.0766 indicates that each additional assist differential increases the log-odds of winning by 0.0766. While a statistically significant predictor because of the p value (\<2e-16), it is the weakest predictor of winning games compared to the rest of the differential performance metrics, reflecting the shift away from team play in the modern NBA.
+
+-   **Rebound Differential (REB_diff)**: The coefficient of 0.0914 means that for every extra rebound differential, the log-odds of a home win increase by approximately 0.091. This variable is also statistically significant (p \< 2e-16), but similar to the assist differential, its effect on predicting winning games is modest compared to shooting percentages. This implies that while rebounding contributes to game success, it is far less influential than shooting efficiency.
+
+After fitting the logistic regression model, we generated predicted win probabilities for each game. For each observation, the model outputs the probability that the home team wins based on the statistical differentials. We then classify each game as a predicted home win or predicted away win using a 0.5 probability cutoff. Our model had an 84.13% of predicting game outcomes correctly
+
+```{r, echo=FALSE}
+knitr::kable(
+  pred_table,
+  caption = "Sample of Model Predictions for Game Outcomes"
+)
+
 ```
 
-The models have been successfully implemented. The logistic regression model (`win_model`) predicts the probability of a home team win, while the linear regression model (`differential_model`) predicts the expected point differential. Predictions have been generated and added to the dataset, including predicted win probabilities, predicted winners, predicted margins, and predicted side (home or away).
+## Conclusion
+
+This analysis demonstrates that differential team performance metrics are strong predictors of NBA game outcomes. Shooting statistics, especially field goal percentage differential and three-point percentage differential, were the most influential factors. These findings were supported consistently across our data visualizations that showed clear separation between winning and losing teams in shooting-related differentials, and by the logistic regression model, where shooting metrics produced the largest and most statistically significant coefficients.
+
+Assists and rebounds also contributed to win probability, though their effects were comparatively much smaller. This suggests that while ball movement and rebounding support overall team success, they are less decisive than shooting efficiency in predicting outcomes in the modern NBA. Assists were the weakest contributing factor in our model in predicting outcomes which we believe is a direct reflection of the NBA moving away from team play. 
+
+The direction and magnitude of each coefficient aligned with expectations: teams that shoot better, pass better, and secure extra possessions via rebounds tend to outperform their opponents.
+
+Overall, our logistic regression model successfully captured the relationship between winning NBA games and performance differentials. Although logistic regression provided strong baseline predictive insight, future improvements can include exploring non-linear models, incorporating player-level metrics, or account for variables such as rest days, travel distance, or injuries. Expanding the feature set would likely improve predictive accuracy and provide a more comprehensive understanding of the factors that drive NBA game results. 
