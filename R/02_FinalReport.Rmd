@@ -146,3 +146,6 @@ Assists and rebounds also contributed to win probability, though their effects w
 The direction and magnitude of each coefficient aligned with expectations: teams that shoot better, pass better, and secure extra possessions via rebounds tend to outperform their opponents.
 
 Overall, our logistic regression model successfully captured the relationship between winning NBA games and performance differentials. Although logistic regression provided strong baseline predictive insight, future improvements can include exploring non-linear models, incorporating player-level metrics, or account for variables such as rest days, travel distance, or injuries. Expanding the feature set would likely improve predictive accuracy and provide a more comprehensive understanding of the factors that drive NBA game results. 
+
+## Link to GitHub Repository:
+https://github.com/janaebatayola/STAT107_Team21_NBA_predictions/blob/main/R/02_FinalReport.Rmd
