@@ -77,10 +77,12 @@ During data preprocessing, the following were created:
 
 Open the project in RStudio
 
-Run:
+Run in the following order:
 
 source("R/00_requirements.R")
+
 source("R/01_CleaningCode.R")
+
 source("R/NBA_Win_Prediction_Annotated.R")
 
 Knit FinalReport.Rmd for the full analysis
