@@ -1,12 +1,12 @@
 #01_CleaningCode.R
-
-source("00_requirements.R")
-setwd("../R")
-teams <- read.csv("/Users/brandonta/STAT107_Team21_NBA_predictions/Raw_Data/teams.csv")
+#load data
+teams <- read.csv("Raw_Data/teams.csv")
 teams <- teams %>%
   select(TEAM_ID, ABBREVIATION, NICKNAME, CITY)
 
-games <- read.csv("/Users/brandonta/STAT107_Team21_NBA_predictions/Raw_Data/games.csv")
+games <- read.csv("Raw_Data/games.csv")
+
+#Clean data
 games_clean <- games %>% 
   left_join(teams %>%
               rename(

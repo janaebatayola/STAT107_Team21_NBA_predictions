@@ -3,14 +3,13 @@
 # Date: 2025-11-06
 # Description: Predicts NBA game outcomes and point differentials
 ############################################################
-
 #Setup
 knitr::opts_chunk$set(echo = TRUE)
-#Loads required packages 
-source("00_requirements.R")
 
-#Runs the cleaning script that loads and preprocesses data
-source("01_CleaningCode.R")
+if (!exists("games_clean")) {
+  stop("games_clean not found. Run 01_CleaningCode.R first.")
+}
+
 
 #Data Summary
 

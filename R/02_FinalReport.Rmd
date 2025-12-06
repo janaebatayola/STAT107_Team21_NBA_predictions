@@ -8,15 +8,22 @@ date: "2025-11-06"
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
-  echo = FALSE,      # hides ALL code
-  message = FALSE,   # hides package load messages
-  warning = FALSE    # hides warnings
+  echo    = FALSE,
+  message = FALSE,
+  warning = FALSE
 )
-library(here)
-# Loads all required packages and libraries
-source("00_requirements.R")
-source("01_CleaningCode.R")
-source("NBA_Win_Prediction_Annotated.R")
+
+# When knitting, working directory might be R/.
+# If so, go up one level to the project root.
+if (basename(getwd()) == "R") {
+  setwd("..")
+}
+
+# Now we are in STAT107_Team21_NBA_predictions/
+# Source scripts from the R/ folder
+source("R/00_requirements.R")
+source("R/01_CleaningCode.R")
+source("R/NBA_Win_Prediction_Annotated.R")
 ```
 
 # NBA Game Win Prediction Using Multivariable Regression Analysis
